@@ -1,12 +1,16 @@
-name: Publish to PyPI
+name: Publish to PyPI and npm
 
 on:
   release:
     types: [published]
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:
-  build:
+  # Build and publish Python package to PyPI
+  build-python:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -30,8 +34,8 @@ jobs:
           name: dist
           path: dist/
 
-  publish:
-    needs: build
+  publish-pypi:
+    needs: build-python
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
@@ -45,3 +49,27 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  # Build and publish npm package
+  publish-npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Sync version from pyproject.toml
+        run: |
+          VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml)
+          cd npm-package
+          npm version $VERSION --no-git-tag-version --allow-same-version
+
+      - name: Publish to npm
+        working-directory: npm-package
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
