@@ -5,11 +5,11 @@
 </p>
 
 <h3 align="center">
-  Automatische KV-Cache Optimierung fuer HuggingFace Transformers
+  Automatische KV-Cache Optimierung für HuggingFace Transformers
 </h3>
 
 <p align="center">
-  <em>Finde die optimale Cache-Strategie, Attention-Backend und Konfiguration fuer dein Modell und deine Hardware.</em>
+  <em>Finde die optimale Cache-Strategie, Attention-Backend und Konfiguration für dein Modell und deine Hardware.</em>
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@
 
 ## Was ist KVCache Auto-Tuner?
 
-**KVCache Auto-Tuner** (`kvat`) benchmarkt und optimiert automatisch deine HuggingFace Transformers Inferenz-Pipeline. Kein Raten mehr welche Konfiguration am besten funktioniert - lass den Tuner es fuer dich herausfinden.
+**KVCache Auto-Tuner** (`kvat`) benchmarkt und optimiert automatisch deine HuggingFace Transformers Inferenz-Pipeline. Kein Raten mehr welche Konfiguration am besten funktioniert - lass den Tuner es für dich herausfinden.
 
 ```bash
 # Installieren und Modell in Sekunden optimieren
@@ -71,7 +71,7 @@ So verbessert **kvat** deine Transformers Inferenz:
 
 </details>
 
-> **Hinweis**: Ergebnisse variieren je nach Modell und Hardware. Groessere Verbesserungen sind typisch fuer Modelle die von Flash Attention und dynamischem Caching profitieren.
+> **Hinweis**: Ergebnisse variieren je nach Modell und Hardware. Größere Verbesserungen sind typisch für Modelle die von Flash Attention und dynamischem Caching profitieren.
 
 ### Multi-Modell Benchmarks
 
@@ -83,36 +83,6 @@ So verbessert **kvat** deine Transformers Inferenz:
 | Phi-1.5 | 40.9ms | 52.8 tok/s | 2.8GB | dynamic/sdpa_flash |
 | Qwen2.5-0.5B | 33.9ms | 33.6 tok/s | 975MB | dynamic/eager |
 
-**Server (RTX 4000 Ada - 20GB VRAM):**
-
-| Modell | TTFT | Durchsatz | VRAM | Beste Konfig |
-|--------|------|-----------|------|--------------|
-| GPT-2 | 4.2ms | **365.4 tok/s** | 264MB | dynamic/sdpa_flash |
-| Qwen2.5-7B | 284ms | 3.3 tok/s | 13.6GB | dynamic/sdpa_flash |
-
-> Server-Durchsatz ist **3x schneller** als Desktop fuer das gleiche Modell!
-
-<details>
-<summary><strong>Server Benchmark Charts (RTX 4000 Ada)</strong></summary>
-
-<p align="center">
-  <img src="assets/server_baseline_vs_optimized_hero.png" alt="Server Performance Uebersicht" width="800">
-</p>
-
-<table>
-<tr>
-<td width="50%">
-<img src="assets/server_baseline_vs_optimized_throughput.png" alt="Server Durchsatz" width="100%">
-<p align="center"><em>Server Durchsatz (tok/s)</em></p>
-</td>
-<td width="50%">
-<img src="assets/server_baseline_vs_optimized_improvement.png" alt="Server Performance-Verbesserung" width="100%">
-<p align="center"><em>Server Performance-Gewinn</em></p>
-</td>
-</tr>
-</table>
-
-</details>
 
 ---
 
@@ -159,11 +129,11 @@ result = search.run()
 | Feature | Beschreibung |
 |---------|--------------|
 | **Automatische Optimierung** | Beste Konfiguration ohne manuelles Experimentieren finden |
-| **Mehrere Profile** | Eingebaute Presets fuer Chat, RAG und Langform-Workloads |
+| **Mehrere Profile** | Eingebaute Presets für Chat, RAG und Langform-Workloads |
 | **Production-Ready Output** | Fertige Python-Code-Snippets und JSON-Configs |
-| **Schoene Reports** | Markdown und HTML Reports mit Performance-Vergleichen |
+| **Schöne Reports** | Markdown und HTML Reports mit Performance-Vergleichen |
 | **Early Stopping** | Smartes Pruning von dominierten Konfigurationen |
-| **Erweiterbar** | Adapter-basiertes Design fuer vLLM/llama.cpp/Ollama |
+| **Erweiterbar** | Adapter-basiertes Design für vLLM/llama.cpp/Ollama |
 
 ### Optimierungs-Parameter
 
@@ -171,7 +141,7 @@ result = search.run()
 |-----------|----------|------------|
 | **Cache-Strategie** | Dynamic, Static, Sliding Window | Speicher & Prefill-Geschwindigkeit |
 | **Attention Backend** | SDPA Flash, Memory Efficient, Math, Eager | Durchsatz & VRAM |
-| **Datentyp** | bfloat16, float16, float32 | Geschwindigkeit vs Praezision |
+| **Datentyp** | bfloat16, float16, float32 | Geschwindigkeit vs Präzision |
 | **Compilation** | torch.compile Modi | Startup vs Runtime |
 
 ### Eingebaute Profile
@@ -188,7 +158,7 @@ result = search.run()
 ## Installation
 
 ```bash
-# Empfohlen: Vollinstallation mit allen Abhaengigkeiten
+# Empfohlen: Vollinstallation mit allen Abhängigkeiten
 pip install kvat[full]
 
 # Basis-Installation
@@ -208,7 +178,7 @@ pip install -e ".[full,dev]"
 
 | Datei | Beschreibung |
 |-------|--------------|
-| `best_plan.json` | Vollstaendige Konfiguration mit Metriken |
+| `best_plan.json` | Vollständige Konfiguration mit Metriken |
 | `optimized_config.py` | Fertiger Python-Code |
 | `report.md` | Menschenlesbarer Bericht |
 | `report.html` | Visueller Report mit Charts |
@@ -230,7 +200,7 @@ pip install -e ".[full,dev]"
 
 ## Roadmap
 
-### v0.1.0 - Veroeffentlicht
+### v0.1.0 - Veröffentlicht
 - [x] Core Tuning Engine mit Grid Search
 - [x] HuggingFace Transformers Adapter
 - [x] CLI Interface (`kvat tune`, `kvat apply`, `kvat compare`)
@@ -254,7 +224,7 @@ pip install -e ".[full,dev]"
 
 ### v1.0.0 - Vision
 - [ ] HuggingFace Hub Integration
-- [ ] npm Package fuer JavaScript/TypeScript
+- [ ] npm Package für JavaScript/TypeScript
 - [ ] Real-time Inferenz-Monitoring Dashboard
 - [ ] A/B Testing Framework
 
@@ -262,7 +232,7 @@ pip install -e ".[full,dev]"
 
 ## Mitwirken
 
-Beitraege sind willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) fuer Details.
+Beiträge sind willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) für Details.
 
 ```bash
 pip install -e ".[dev]"
@@ -274,13 +244,13 @@ ruff check kvat/
 
 ## Lizenz
 
-Apache 2.0 - Siehe [LICENSE](LICENSE) fuer Details.
+Apache 2.0 - Siehe [LICENSE](LICENSE) für Details.
 
 ## Zitierung
 
 ```bibtex
 @software{kvat,
-  title = {KVCache Auto-Tuner: Automatische KV-Cache Optimierung fuer Transformers},
+  title = {KVCache Auto-Tuner: Automatische KV-Cache Optimierung für Transformers},
   author = {Keyvanhardani},
   year = {2026},
   url = {https://github.com/Keyvanhardani/kvcache-autotune}

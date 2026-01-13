@@ -1,4 +1,4 @@
-name: Publish to PyPI and npm
+name: Publish to PyPI, npm and GitHub Packages
 
 on:
   release:
@@ -50,13 +50,13 @@ jobs:
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
 
-  # Build and publish npm package
+  # Publish to npm registry
   publish-npm:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Set up Node.js for npm
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -73,3 +73,33 @@ jobs:
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  # Publish to GitHub Packages
+  publish-github-packages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js for GitHub Packages
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@keyvanhardani'
+
+      - name: Sync version and set scope
+        run: |
+          VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml)
+          cd npm-package
+          # Update package name with scope for GitHub Packages
+          npm pkg set name="@keyvanhardani/kvat"
+          npm version $VERSION --no-git-tag-version --allow-same-version
+
+      - name: Publish to GitHub Packages
+        working-directory: npm-package
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
