@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> | <strong>Deutsch</strong>
+  <a href="README.md">English</a> | <strong>Deutsch</strong> | <a href="README_FR.md">Francais</a> | <a href="README_ES.md">Espanol</a> | <a href="README_FA.md">فارسی</a> | <a href="README_AR.md">العربية</a>
 </p>
 
 ---

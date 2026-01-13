@@ -8,6 +8,10 @@
   <a href="https://github.com/Keyvanhardani/kvcache-autotune/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
 </p>
 
+<p align="center">
+  <strong>English</strong> | <a href="README_DE.md">Deutsch</a> | <a href="README_FR.md">Francais</a> | <a href="README_ES.md">Espanol</a> | <a href="README_FA.md">فارسی</a> | <a href="README_AR.md">العربية</a>
+</p>
+
 ---
 
 ## Why kvat?
