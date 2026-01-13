@@ -97,7 +97,35 @@ See how **kvat** improves your Transformers inference:
 > Server throughput is **3x faster** than desktop for the same model!
 
 <details>
-<summary><strong>View Multi-Model Charts</strong></summary>
+<summary><strong>View Server Benchmark Charts (RTX 4000 Ada)</strong></summary>
+
+<p align="center">
+  <img src="assets/server_baseline_vs_optimized_hero.png" alt="Server Performance Overview" width="800">
+</p>
+
+<table>
+<tr>
+<td width="50%">
+<img src="assets/server_baseline_vs_optimized_throughput.png" alt="Server Throughput" width="100%">
+<p align="center"><em>Server Throughput (tok/s)</em></p>
+</td>
+<td width="50%">
+<img src="assets/server_baseline_vs_optimized_improvement.png" alt="Server Performance Improvement" width="100%">
+<p align="center"><em>Server Performance Gain</em></p>
+</td>
+</tr>
+<tr>
+<td colspan="2">
+<img src="assets/server_baseline_vs_optimized_ttft.png" alt="Server TTFT" width="50%">
+<p align="center"><em>Time to First Token on Server</em></p>
+</td>
+</tr>
+</table>
+
+</details>
+
+<details>
+<summary><strong>View Desktop Multi-Model Charts</strong></summary>
 
 <p align="center">
   <img src="assets/comparison_hero.png" alt="Multi-Model Performance Overview" width="800">
@@ -234,29 +262,32 @@ pip install -e ".[full,dev]"
 
 ## Roadmap
 
-### v0.1.0 (Current)
+### v0.1.0 - Released
 - [x] Core tuning engine with grid search
 - [x] HuggingFace Transformers adapter
 - [x] CLI interface (`kvat tune`, `kvat apply`, `kvat compare`)
-- [x] Built-in profiles (chat-agent, rag, longform)
-- [x] CUDA/GPU memory tracking
+- [x] Built-in profiles (chat-agent, rag, longform, ci-micro)
+- [x] CUDA/GPU memory tracking with pynvml
 - [x] Windows & Linux support
+- [x] PyPI package (`pip install kvat[full]`)
+- [x] Baseline vs Optimized benchmarking
 
-### v0.2.0 (Next)
+### v0.2.0 - In Development
+- [ ] **Ollama adapter** - Local model optimization
+- [ ] **llama.cpp adapter** - GGUF model support
 - [ ] Batch size optimization
 - [ ] CPU offload strategies
+
+### v0.3.0 - Planned
+- [ ] **vLLM adapter** - Production serving
+- [ ] Quantized KV-cache (INT8/INT4)
 - [ ] `kvat watch` - Continuous monitoring
 - [ ] Profile recommendations based on hardware
 
-### v0.3.0 (Planned)
-- [ ] **Ollama adapter** - Local model optimization
-- [ ] **llama.cpp adapter** - GGUF model support
-- [ ] **vLLM adapter** - Production serving
-- [ ] Quantized KV-cache (INT8/INT4)
-
-### v1.0.0 (Future)
+### v1.0.0 - Vision
 - [ ] HuggingFace Hub integration
-- [ ] Real-time inference monitoring
+- [ ] npm package for JavaScript/TypeScript
+- [ ] Real-time inference monitoring dashboard
 - [ ] A/B testing framework
 
 ---
@@ -283,7 +314,7 @@ Apache 2.0 - See [LICENSE](LICENSE) for details.
 @software{kvat,
   title = {KVCache Auto-Tuner: Automatic KV-Cache Optimization for Transformers},
   author = {Keyvanhardani},
-  year = {2025},
+  year = {2026},
   url = {https://github.com/Keyvanhardani/kvcache-autotune}
 }
 ```
@@ -291,7 +322,7 @@ Apache 2.0 - See [LICENSE](LICENSE) for details.
 ---
 
 <p align="center">
-  <a href="https://keyvan.ai"><strong>Keyvan.ai</strong></a> | <a href="https://linkedin.com/in/keyvanhardani">LinkedIn</a>
+  <a href="https://keyvan.ai"><strong>Keyvan.ai</strong></a> | <a href="https://www.linkedin.com/in/keyvanhardani">LinkedIn</a>
 </p>
 <p align="center">
   Made from Germany with dedication for the HuggingFace community

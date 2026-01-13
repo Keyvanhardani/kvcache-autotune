@@ -1,94 +1,145 @@
 # KVCache Auto-Tuner
 
 <p align="center">
-  <strong>Automatische KV-Cache Optimierung für HuggingFace Transformers</strong>
+  <img src="assets/benchmark_hero.png" alt="KVCache Auto-Tuner" width="700">
+</p>
+
+<h3 align="center">
+  Automatische KV-Cache Optimierung fuer HuggingFace Transformers
+</h3>
+
+<p align="center">
+  <em>Finde die optimale Cache-Strategie, Attention-Backend und Konfiguration fuer dein Modell und deine Hardware.</em>
 </p>
 
 <p align="center">
-  <a href="#funktionen">Funktionen</a> •
-  <a href="#installation">Installation</a> •
-  <a href="#schnellstart">Schnellstart</a> •
-  <a href="#dokumentation">Dokumentation</a> •
-  <a href="#mitwirken">Mitwirken</a>
+  <a href="https://github.com/Keyvanhardani/kvcache-autotune/actions"><img src="https://github.com/Keyvanhardani/kvcache-autotune/workflows/Tests/badge.svg" alt="Tests"></a>
+  <a href="https://pypi.org/project/kvat/"><img src="https://img.shields.io/pypi/v/kvat.svg" alt="PyPI"></a>
+  <a href="https://pypi.org/project/kvat/"><img src="https://img.shields.io/pypi/pyversions/kvat.svg" alt="Python"></a>
+  <a href="https://github.com/Keyvanhardani/kvcache-autotune/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="Lizenz"></a>
+</p>
+
+<p align="center">
+  <a href="README.md">English</a> | <strong>Deutsch</strong>
 </p>
 
 ---
 
-**KVCache Auto-Tuner** findet automatisch die optimale KV-Cache-Konfiguration für Ihr Modell, Ihre Hardware und Ihren Anwendungsfall. Schluss mit dem Raten, welche Cache-Strategie, welches Attention-Backend oder welcher Datentyp am besten funktioniert – lassen Sie den Tuner die Arbeit erledigen.
+## Was ist KVCache Auto-Tuner?
 
-## Warum KVCache Auto-Tuner?
-
-Moderne LLM-Inferenz erfordert viele Konfigurationsentscheidungen:
-
-- **Cache-Strategie**: Dynamic vs Static vs Sliding Window
-- **Attention-Backend**: SDPA, Flash Attention, xFormers
-- **Datentypen**: fp16, bf16, fp32
-- **Kompilierung**: torch.compile Modi
-
-Die optimale Kombination hängt von Ihrem spezifischen Modell, Ihrer Hardware und Ihrem Anwendungsfall ab. KVCache Auto-Tuner benchmarkt diese Kombinationen systematisch und liefert eine produktionsreife Konfiguration.
-
-## Funktionen
-
-- **Automatische Optimierung**: Beste Konfiguration ohne manuelle Experimente finden
-- **Mehrere Profile**: Eingebaute Voreinstellungen für Chat/Agent, RAG und Langtext-Workflows
-- **Benutzerdefinierte Workloads**: Eigene Profile mit spezifischen Kontext-/Ausgabelängen definieren
-- **Produktionsreife Ausgabe**: Direkt verwendbare Python-Code-Snippets und JSON-Pläne
-- **Schöne Berichte**: Markdown- und HTML-Berichte mit Leistungsvergleichen
-- **Early Stopping**: Intelligentes Pruning dominierter Konfigurationen für schnellere Ergebnisse
-- **Erweiterbare Architektur**: Adapter-basiertes Design für zukünftige vLLM/llama.cpp-Unterstützung
-
-## Installation
+**KVCache Auto-Tuner** (`kvat`) benchmarkt und optimiert automatisch deine HuggingFace Transformers Inferenz-Pipeline. Kein Raten mehr welche Konfiguration am besten funktioniert - lass den Tuner es fuer dich herausfinden.
 
 ```bash
-# Basis-Installation (CLI + Core)
-pip install kvcache-autotune
-
-# Mit Transformers-Unterstützung (empfohlen)
-pip install kvcache-autotune[transformers]
-
-# Vollständige Installation mit allen optionalen Abhängigkeiten
-pip install kvcache-autotune[full]
+# Installieren und Modell in Sekunden optimieren
+pip install kvat[full]
+kvat tune gpt2 --profile chat-agent
 ```
 
-### Aus dem Quellcode
+---
 
-```bash
-git clone https://github.com/your-org/kvcache-autotune.git
-cd kvcache-autotune
-pip install -e ".[full,dev]"
-```
+## Performance
+
+### Baseline vs Optimiert
+
+So verbessert **kvat** deine Transformers Inferenz:
+
+<p align="center">
+  <img src="assets/baseline_vs_optimized_hero.png" alt="Performance-Verbesserung mit KVCache Auto-Tuner" width="800">
+</p>
+
+| Modell | Ohne kvat | Mit kvat | Verbesserung |
+|--------|-----------|----------|--------------|
+| **GPT-2** (124M) | 118.1 tok/s | 120.2 tok/s | **+1.8%** |
+| **Qwen2.5-0.5B** | 28.7 tok/s | 29.5 tok/s | **+2.7%** |
+| **Phi-1.5** (1.3B) | 45.2 tok/s | 45.6 tok/s | **+0.9%** |
+
+<details>
+<summary><strong>Detaillierte Vergleichs-Charts anzeigen</strong></summary>
+
+<table>
+<tr>
+<td width="50%">
+<img src="assets/baseline_vs_optimized_throughput.png" alt="Durchsatz: Baseline vs Optimiert" width="100%">
+<p align="center"><em>Durchsatz-Vergleich</em></p>
+</td>
+<td width="50%">
+<img src="assets/baseline_vs_optimized_improvement.png" alt="Performance-Verbesserung %" width="100%">
+<p align="center"><em>Performance-Gewinn</em></p>
+</td>
+</tr>
+</table>
+
+</details>
+
+> **Hinweis**: Ergebnisse variieren je nach Modell und Hardware. Groessere Verbesserungen sind typisch fuer Modelle die von Flash Attention und dynamischem Caching profitieren.
+
+### Multi-Modell Benchmarks
+
+**Desktop (RTX 4060 - 8GB VRAM):**
+
+| Modell | TTFT | Durchsatz | VRAM | Beste Konfig |
+|--------|------|-----------|------|--------------|
+| GPT-2 | 9.1ms | 124.6 tok/s | 283MB | dynamic/sdpa_flash |
+| Phi-1.5 | 40.9ms | 52.8 tok/s | 2.8GB | dynamic/sdpa_flash |
+| Qwen2.5-0.5B | 33.9ms | 33.6 tok/s | 975MB | dynamic/eager |
+
+**Server (RTX 4000 Ada - 20GB VRAM):**
+
+| Modell | TTFT | Durchsatz | VRAM | Beste Konfig |
+|--------|------|-----------|------|--------------|
+| GPT-2 | 4.2ms | **365.4 tok/s** | 264MB | dynamic/sdpa_flash |
+| Qwen2.5-7B | 284ms | 3.3 tok/s | 13.6GB | dynamic/sdpa_flash |
+
+> Server-Durchsatz ist **3x schneller** als Desktop fuer das gleiche Modell!
+
+<details>
+<summary><strong>Server Benchmark Charts (RTX 4000 Ada)</strong></summary>
+
+<p align="center">
+  <img src="assets/server_baseline_vs_optimized_hero.png" alt="Server Performance Uebersicht" width="800">
+</p>
+
+<table>
+<tr>
+<td width="50%">
+<img src="assets/server_baseline_vs_optimized_throughput.png" alt="Server Durchsatz" width="100%">
+<p align="center"><em>Server Durchsatz (tok/s)</em></p>
+</td>
+<td width="50%">
+<img src="assets/server_baseline_vs_optimized_improvement.png" alt="Server Performance-Verbesserung" width="100%">
+<p align="center"><em>Server Performance-Gewinn</em></p>
+</td>
+</tr>
+</table>
+
+</details>
+
+---
 
 ## Schnellstart
 
-### CLI-Nutzung
+### CLI Nutzung
 
 ```bash
-# Basis-Tuning mit Chat-Agent-Profil
+# Beliebiges HuggingFace Modell optimieren
 kvat tune meta-llama/Llama-3.2-1B --profile chat-agent
 
-# RAG-Workload mit benutzerdefinierten Kontextlängen
-kvat tune mistralai/Mistral-7B-v0.1 --profile rag --context 8192,16384,32768
+# Schnelltest
+kvat tune gpt2 --profile ci-micro -v
 
-# Gespeicherten Plan anwenden
-kvat apply ./kvat_results/best_plan.json --print-snippet
-
-# Zwei Konfigurationen vergleichen
-kvat compare baseline_plan.json new_plan.json
-
-# Verfügbare Profile auflisten
-kvat profiles
+# System-Info anzeigen
+kvat info
 ```
 
-### Python-API
+### Python API
 
 ```python
 from kvat.core.schema import TuneConfig, DeviceType
 from kvat.core.profiles import get_profile
 from kvat.engines.transformers import TransformersAdapter
 from kvat.core.search import TuningSearch
-from kvat.core.planner import PlanBuilder
 
-# Tuning konfigurieren
+# Konfigurieren und Optimierung starten
 config = TuneConfig(
     model_id="meta-llama/Llama-3.2-1B",
     device=DeviceType.CUDA,
@@ -96,141 +147,151 @@ config = TuneConfig(
     output_dir="./results",
 )
 
-# Optimierung ausführen
 adapter = TransformersAdapter()
 search = TuningSearch(config=config, adapter=adapter)
 result = search.run()
-
-# Produktionsreifen Code abrufen
-planner = PlanBuilder(result)
-print(planner.generate_code_snippet())
 ```
 
-## Profile
+---
 
-KVCache Auto-Tuner enthält optimierte Profile für gängige Workloads:
+## Features
 
-| Profil | Kontext | Ausgabe | Optimierungsfokus |
-|--------|---------|---------|-------------------|
-| `chat-agent` | 2-8K | 64-256 | TTFT minimieren (50%) |
-| `rag` | 8-32K | 256-512 | Alle Metriken ausbalancieren (35/35/30) |
-| `longform` | 4-8K | 1-2K | Durchsatz maximieren (50%) |
-| `ci-micro` | 512 | 32 | Schnelle CI-Validierung |
+| Feature | Beschreibung |
+|---------|--------------|
+| **Automatische Optimierung** | Beste Konfiguration ohne manuelles Experimentieren finden |
+| **Mehrere Profile** | Eingebaute Presets fuer Chat, RAG und Langform-Workloads |
+| **Production-Ready Output** | Fertige Python-Code-Snippets und JSON-Configs |
+| **Schoene Reports** | Markdown und HTML Reports mit Performance-Vergleichen |
+| **Early Stopping** | Smartes Pruning von dominierten Konfigurationen |
+| **Erweiterbar** | Adapter-basiertes Design fuer vLLM/llama.cpp/Ollama |
 
-### Benutzerdefinierte Profile
+### Optimierungs-Parameter
 
-```python
-from kvat.core.profiles import create_custom_profile
+| Parameter | Optionen | Auswirkung |
+|-----------|----------|------------|
+| **Cache-Strategie** | Dynamic, Static, Sliding Window | Speicher & Prefill-Geschwindigkeit |
+| **Attention Backend** | SDPA Flash, Memory Efficient, Math, Eager | Durchsatz & VRAM |
+| **Datentyp** | bfloat16, float16, float32 | Geschwindigkeit vs Praezision |
+| **Compilation** | torch.compile Modi | Startup vs Runtime |
 
-profile = create_custom_profile(
-    name="mein-workload",
-    context_lengths=[4096, 8192],
-    output_lengths=[256, 512],
-    weight_ttft=0.4,
-    weight_throughput=0.4,
-    weight_memory=0.2,
-)
+### Eingebaute Profile
+
+| Profil | Kontext | Output | Fokus |
+|--------|---------|--------|-------|
+| `chat-agent` | 2-8K | 64-256 | TTFT (Latenz) |
+| `rag` | 8-32K | 256-512 | Ausgewogen |
+| `longform` | 4-8K | 1-2K | Durchsatz |
+| `ci-micro` | 512 | 32 | Schnelltests |
+
+---
+
+## Installation
+
+```bash
+# Empfohlen: Vollinstallation mit allen Abhaengigkeiten
+pip install kvat[full]
+
+# Basis-Installation
+pip install kvat
+
+# Aus Source
+git clone https://github.com/Keyvanhardani/kvcache-autotune.git
+cd kvcache-autotune
+pip install -e ".[full,dev]"
 ```
 
-## Ausgabe
+**Anforderungen**: Python 3.9+, PyTorch 2.0+, Transformers 4.35+
 
-KVCache Auto-Tuner generiert:
+---
 
-1. **JSON-Plan** (`best_plan.json`): Vollständige Konfiguration mit Metriken und Fallback-Regeln
-2. **Code-Snippet** (`optimized_config.py`): Direkt verwendbarer Python-Code für Ihre Inferenz-Pipeline
-3. **Markdown-Bericht** (`report.md`): Lesbare Zusammenfassung mit Rankings
-4. **HTML-Bericht** (`report.html`): Visueller Bericht mit Diagrammen und Styling
+## Output-Dateien
 
-### Beispielausgabe
+| Datei | Beschreibung |
+|-------|--------------|
+| `best_plan.json` | Vollstaendige Konfiguration mit Metriken |
+| `optimized_config.py` | Fertiger Python-Code |
+| `report.md` | Menschenlesbarer Bericht |
+| `report.html` | Visueller Report mit Charts |
 
-```
-Beste Konfiguration:
-  Cache-Strategie: dynamic
-  Attention-Backend: sdpa_flash
-  Datentyp: float16
-  Score: 87.32
-  Konfidenz: 94%
-
-Leistung:
-  TTFT: 45.2ms (Mittel), 3.1ms (Std)
-  Durchsatz: 78.5 Tok/s
-  Max. VRAM: 4.521 MB
-```
-
-## Architektur
+### Beispiel-Output
 
 ```
-kvat/
-├── core/
-│   ├── schema.py      # Pydantic-Datenmodelle
-│   ├── metrics.py     # TTFT, Durchsatz, Scoring
-│   ├── profiles.py    # Workload-Profile
-│   ├── search.py      # Grid-Search mit Pruning
-│   ├── planner.py     # Plan-Generierung
-│   └── report.py      # Markdown/HTML-Berichte
-├── engines/
-│   ├── base.py        # EngineAdapter-Interface
-│   └── transformers.py # HuggingFace-Adapter
-├── probes/
-│   ├── gpu.py         # CUDA-Speicher-Tracking
-│   └── cpu.py         # RAM-Überwachung
-└── cli.py             # Typer-CLI
++-----------------------------------------------------------------------------+
+| Beste Konfiguration                                                         |
+|                                                                             |
+| Cache-Strategie: dynamic                                                    |
+| Attention Backend: sdpa_flash                                               |
+| Datentyp: bfloat16                                                          |
+| Score: 100.00                                                               |
++-----------------------------------------------------------------------------+
 ```
+
+---
 
 ## Roadmap
 
-### P0 (Aktuell)
-- [x] Core-Tuning-Engine
-- [x] Transformers-Adapter
-- [x] CLI-Interface
-- [x] Markdown/HTML-Berichte
+### v0.1.0 - Veroeffentlicht
+- [x] Core Tuning Engine mit Grid Search
+- [x] HuggingFace Transformers Adapter
+- [x] CLI Interface (`kvat tune`, `kvat apply`, `kvat compare`)
+- [x] Eingebaute Profile (chat-agent, rag, longform, ci-micro)
+- [x] CUDA/GPU Speicher-Tracking mit pynvml
+- [x] Windows & Linux Support
+- [x] PyPI Package (`pip install kvat[full]`)
+- [x] Baseline vs Optimized Benchmarking
 
-### P1 (Nächste Schritte)
-- [ ] Batch-Size-Sweeps
-- [ ] CPU-Offload-Strategien
-- [ ] CI-Micro-Benchmark-Suite
-- [ ] `kvat watch` für kontinuierliches Monitoring
+### v0.2.0 - In Entwicklung
+- [ ] **Ollama Adapter** - Lokale Modell-Optimierung
+- [ ] **llama.cpp Adapter** - GGUF Modell-Support
+- [ ] Batch-Size Optimierung
+- [ ] CPU Offload Strategien
 
-### P2 (Zukunft)
-- [ ] vLLM-Adapter
-- [ ] llama.cpp-Adapter
-- [ ] Quantisierter KV-Cache-Support
-- [ ] Multi-GPU-Konfigurationen
+### v0.3.0 - Geplant
+- [ ] **vLLM Adapter** - Production Serving
+- [ ] Quantisierter KV-Cache (INT8/INT4)
+- [ ] `kvat watch` - Kontinuierliches Monitoring
+- [ ] Profil-Empfehlungen basierend auf Hardware
+
+### v1.0.0 - Vision
+- [ ] HuggingFace Hub Integration
+- [ ] npm Package fuer JavaScript/TypeScript
+- [ ] Real-time Inferenz-Monitoring Dashboard
+- [ ] A/B Testing Framework
+
+---
 
 ## Mitwirken
 
-Beiträge sind willkommen! Bitte lesen Sie unseren [Contribution Guide](CONTRIBUTING.md) für Details.
+Beitraege sind willkommen! Siehe [CONTRIBUTING.md](CONTRIBUTING.md) fuer Details.
 
 ```bash
-# Entwicklungsumgebung einrichten
 pip install -e ".[dev]"
-pre-commit install
-
-# Tests ausführen
 pytest tests/ -v
-
-# Linting ausführen
 ruff check kvat/
 ```
 
+---
+
 ## Lizenz
 
-Apache 2.0 - Siehe [LICENSE](LICENSE) für Details.
+Apache 2.0 - Siehe [LICENSE](LICENSE) fuer Details.
 
 ## Zitierung
 
-Wenn Sie KVCache Auto-Tuner in Ihrer Forschung verwenden, zitieren Sie bitte:
-
 ```bibtex
-@software{kvcache_autotune,
-  title = {KVCache Auto-Tuner: Automatic KV-Cache Optimization for Transformers},
-  year = {2024},
-  url = {https://github.com/your-org/kvcache-autotune}
+@software{kvat,
+  title = {KVCache Auto-Tuner: Automatische KV-Cache Optimierung fuer Transformers},
+  author = {Keyvanhardani},
+  year = {2026},
+  url = {https://github.com/Keyvanhardani/kvcache-autotune}
 }
 ```
 
 ---
 
 <p align="center">
-  Mit Hingabe für die HuggingFace-Community entwickelt
+  <a href="https://keyvan.ai"><strong>Keyvan.ai</strong></a> | <a href="https://www.linkedin.com/in/keyvanhardani">LinkedIn</a>
+</p>
+<p align="center">
+  Made in Germany with dedication for the HuggingFace Community
 </p>

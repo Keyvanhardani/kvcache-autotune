@@ -165,7 +165,11 @@ logs/
 
 # Private/Session files - DO NOT COMMIT
 CONTEXT.md
+Plan.txt
+PLAN.txt
+*.plan
 .claude/
 *.claude
 benchmark_*/
 benchmark_test/
+nul
