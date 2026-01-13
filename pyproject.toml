@@ -1,0 +1,144 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kvcache-autotune"
+version = "0.1.0"
+description = "Automatic KV-cache optimization for HuggingFace Transformers - Find the optimal cache strategy, attention backend, and configuration for your model and hardware."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.9"
+authors = [
+    { name = "KVCache Auto-Tuner Contributors" }
+]
+keywords = [
+    "transformers",
+    "llm",
+    "kv-cache",
+    "optimization",
+    "inference",
+    "huggingface",
+    "deep-learning",
+    "machine-learning",
+    "pytorch",
+    "flash-attention",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "pydantic>=2.0.0",
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+]
+
+[project.optional-dependencies]
+transformers = [
+    "transformers>=4.35.0",
+    "torch>=2.0.0",
+    "accelerate>=0.25.0",
+]
+full = [
+    "transformers>=4.35.0",
+    "torch>=2.0.0",
+    "accelerate>=0.25.0",
+    "psutil>=5.9.0",
+    "pynvml>=11.5.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+    "pre-commit>=3.0.0",
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.24.0",
+]
+
+[project.scripts]
+kvat = "kvat.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/your-org/kvcache-autotune"
+Documentation = "https://github.com/your-org/kvcache-autotune#readme"
+Repository = "https://github.com/your-org/kvcache-autotune"
+Issues = "https://github.com/your-org/kvcache-autotune/issues"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/kvat",
+    "/tests",
+    "/examples",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["kvat"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by formatter)
+    "B008",   # do not perform function calls in argument defaults
+    "B905",   # zip without strict
+    "C901",   # too complex
+]
+
+[tool.ruff.isort]
+known-first-party = ["kvat"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-v --tb=short"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "gpu: marks tests requiring GPU",
+]
+
+[tool.coverage.run]
+source = ["kvat"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
