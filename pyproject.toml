@@ -76,10 +76,10 @@ docs = [
 kvat = "kvat.cli:cli"
 
 [project.urls]
-Homepage = "https://github.com/your-org/kvcache-autotune"
-Documentation = "https://github.com/your-org/kvcache-autotune#readme"
-Repository = "https://github.com/your-org/kvcache-autotune"
-Issues = "https://github.com/your-org/kvcache-autotune/issues"
+Homepage = "https://github.com/Keyvanhardani/kvcache-autotune"
+Documentation = "https://github.com/Keyvanhardani/kvcache-autotune#readme"
+Repository = "https://github.com/Keyvanhardani/kvcache-autotune"
+Issues = "https://github.com/Keyvanhardani/kvcache-autotune/issues"
 
 [tool.hatch.build.targets.sdist]
 include = [
@@ -94,6 +94,8 @@ packages = ["kvat"]
 [tool.ruff]
 target-version = "py39"
 line-length = 88
+
+[tool.ruff.lint]
 select = [
     "E",      # pycodestyle errors
     "W",      # pycodestyle warnings
@@ -102,17 +104,17 @@ select = [
     "B",      # flake8-bugbear
     "C4",     # flake8-comprehensions
     "UP",     # pyupgrade
-    "ARG",    # flake8-unused-arguments
-    "SIM",    # flake8-simplify
 ]
 ignore = [
     "E501",   # line too long (handled by formatter)
     "B008",   # do not perform function calls in argument defaults
+    "B904",   # raise from (typer.Exit doesn't support this)
     "B905",   # zip without strict
     "C901",   # too complex
+    "F401",   # imported but unused (used for availability checks)
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["kvat"]
 
 [tool.mypy]

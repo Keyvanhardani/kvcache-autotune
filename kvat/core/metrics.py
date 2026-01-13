@@ -9,13 +9,13 @@ Handles:
 
 from __future__ import annotations
 
-import time
 import gc
-from dataclasses import dataclass, field
-from typing import Optional, Callable, Any
+import time
 from contextlib import contextmanager
+from dataclasses import dataclass, field
+from typing import Callable
 
-from kvat.core.schema import Metrics, BenchmarkResult, WorkloadProfile
+from kvat.core.schema import BenchmarkResult, Metrics, WorkloadProfile
 
 
 @dataclass
@@ -23,7 +23,7 @@ class TimingContext:
     """Context for timing a generation run."""
 
     start_time: float = 0.0
-    first_token_time: Optional[float] = None
+    first_token_time: float | None = None
     end_time: float = 0.0
     tokens_generated: int = 0
 
@@ -82,9 +82,9 @@ class TimingContext:
 class ResourceSnapshot:
     """Snapshot of system resource usage."""
 
-    vram_mb: Optional[float] = None
-    ram_mb: Optional[float] = None
-    gpu_utilization: Optional[float] = None
+    vram_mb: float | None = None
+    ram_mb: float | None = None
+    gpu_utilization: float | None = None
     timestamp: float = field(default_factory=time.time)
 
 
@@ -98,14 +98,14 @@ class MetricsCollector:
 
     def __init__(self) -> None:
         self._timing = TimingContext()
-        self._peak_vram_mb: Optional[float] = None
-        self._peak_ram_mb: Optional[float] = None
-        self._error: Optional[str] = None
+        self._peak_vram_mb: float | None = None
+        self._peak_ram_mb: float | None = None
+        self._error: str | None = None
         self._timeout: bool = False
 
         # Callbacks for resource probes
-        self._vram_probe: Optional[Callable[[], float]] = None
-        self._ram_probe: Optional[Callable[[], float]] = None
+        self._vram_probe: Callable[[], float] | None = None
+        self._ram_probe: Callable[[], float] | None = None
 
     def set_vram_probe(self, probe: Callable[[], float]) -> None:
         """Set the VRAM measurement probe."""
@@ -209,8 +209,8 @@ class MetricsCollector:
 def calculate_score(
     result: BenchmarkResult,
     profile: WorkloadProfile,
-    baseline_ttft: Optional[float] = None,
-    baseline_throughput: Optional[float] = None,
+    baseline_ttft: float | None = None,
+    baseline_throughput: float | None = None,
 ) -> float:
     """
     Calculate weighted score for a benchmark result.
@@ -258,7 +258,7 @@ def calculate_score(
     return weighted_score * stability_factor * 100
 
 
-def _normalize_ttft(ttft_ms: float, baseline: Optional[float] = None) -> float:
+def _normalize_ttft(ttft_ms: float, baseline: float | None = None) -> float:
     """Normalize TTFT score (lower is better)."""
     if ttft_ms <= 0:
         return 0.0
@@ -279,7 +279,7 @@ def _normalize_ttft(ttft_ms: float, baseline: Optional[float] = None) -> float:
 
 def _normalize_throughput(
     throughput: float,
-    baseline: Optional[float] = None
+    baseline: float | None = None
 ) -> float:
     """Normalize throughput score (higher is better)."""
     if throughput <= 0:

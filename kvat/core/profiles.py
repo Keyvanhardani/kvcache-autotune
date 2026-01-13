@@ -9,12 +9,10 @@ Provides realistic, production-tested profiles for common use cases:
 
 from __future__ import annotations
 
-from typing import Optional
-from pathlib import Path
 import json
+from pathlib import Path
 
-from kvat.core.schema import WorkloadProfile, ProfileType
-
+from kvat.core.schema import ProfileType, WorkloadProfile
 
 # =============================================================================
 # Built-in Profiles
@@ -87,7 +85,7 @@ def list_profiles() -> list[str]:
     return list(BUILTIN_PROFILES.keys())
 
 
-def get_profile(name: str) -> Optional[WorkloadProfile]:
+def get_profile(name: str) -> WorkloadProfile | None:
     """Get a built-in profile by name."""
     return BUILTIN_PROFILES.get(name)
 
@@ -110,7 +108,7 @@ def load_profile_from_json(path: str | Path) -> WorkloadProfile:
     if not path.exists():
         raise FileNotFoundError(f"Profile file not found: {path}")
 
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         data = json.load(f)
 
     # Ensure custom type if not specified

@@ -12,15 +12,16 @@ This abstraction enables support for multiple backends:
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Optional, Any, Iterator
+from collections.abc import Iterator
 from dataclasses import dataclass
+from typing import Any
 
 from kvat.core.schema import (
-    CandidateConfig,
-    CacheStrategy,
     AttentionBackend,
-    DType,
+    CacheStrategy,
+    CandidateConfig,
     DeviceType,
+    DType,
 )
 
 
@@ -38,9 +39,9 @@ class GenerationOutput:
 class ResourceUsage:
     """Resource usage snapshot."""
 
-    vram_mb: Optional[float] = None
-    ram_mb: Optional[float] = None
-    gpu_utilization: Optional[float] = None
+    vram_mb: float | None = None
+    ram_mb: float | None = None
+    gpu_utilization: float | None = None
 
 
 class EngineAdapter(ABC):

@@ -9,7 +9,6 @@ Monitors:
 from __future__ import annotations
 
 import os
-from typing import Optional
 from dataclasses import dataclass
 
 
@@ -42,12 +41,12 @@ def get_process_ram_mb() -> float:
 
     # Fallback: /proc/self/status on Linux
     try:
-        with open("/proc/self/status", "r") as f:
+        with open("/proc/self/status") as f:
             for line in f:
                 if line.startswith("VmRSS:"):
                     # VmRSS is in kB
                     return float(line.split()[1]) / 1024
-    except (FileNotFoundError, IOError):
+    except (OSError, FileNotFoundError):
         pass
 
     # Windows fallback via ctypes
@@ -88,7 +87,7 @@ def get_process_ram_mb() -> float:
     return 0.0
 
 
-def get_system_ram_info() -> Optional[SystemRAMInfo]:
+def get_system_ram_info() -> SystemRAMInfo | None:
     """
     Get system-wide RAM information.
 
@@ -110,7 +109,7 @@ def get_system_ram_info() -> Optional[SystemRAMInfo]:
     # Linux fallback: /proc/meminfo
     try:
         meminfo = {}
-        with open("/proc/meminfo", "r") as f:
+        with open("/proc/meminfo") as f:
             for line in f:
                 parts = line.split()
                 if len(parts) >= 2:
@@ -128,7 +127,7 @@ def get_system_ram_info() -> Optional[SystemRAMInfo]:
             used_mb=used,
             percent_used=(used / total * 100) if total > 0 else 0,
         )
-    except (FileNotFoundError, IOError, KeyError):
+    except (OSError, FileNotFoundError, KeyError):
         pass
 
     return None

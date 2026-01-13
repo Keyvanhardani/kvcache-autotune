@@ -7,11 +7,10 @@ from tuning results.
 
 from __future__ import annotations
 
-from pathlib import Path
 from datetime import datetime
-from typing import Optional
+from pathlib import Path
 
-from kvat.core.schema import TuneResult, BenchmarkResult
+from kvat.core.schema import BenchmarkResult, TuneResult
 
 
 class ReportGenerator:
@@ -425,7 +424,7 @@ class ReportGenerator:
 
         return html
 
-    def _get_best_metrics(self) -> Optional[BenchmarkResult]:
+    def _get_best_metrics(self) -> BenchmarkResult | None:
         """Get metrics for best configuration."""
         for result in self.result.all_results:
             if result.candidate == self.result.best_config:

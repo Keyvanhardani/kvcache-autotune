@@ -10,31 +10,27 @@ Provides commands:
 
 from __future__ import annotations
 
-import sys
-import json
-from pathlib import Path
-from typing import Optional
 import logging
+import sys
+from pathlib import Path
 
 import typer
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
-from rich.table import Table
 from rich.panel import Panel
-from rich import print as rprint
+from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
+from rich.table import Table
 
 from kvat import __version__
-from kvat.core.schema import (
-    TuneConfig,
-    DeviceType,
-    WorkloadProfile,
-    ProfileType,
-)
 from kvat.core.profiles import (
     get_profile,
-    list_profiles,
     get_profile_description,
+    list_profiles,
     load_profile_from_json,
+)
+from kvat.core.schema import (
+    DeviceType,
+    TuneConfig,
+    WorkloadProfile,
 )
 
 app = typer.Typer(
@@ -101,13 +97,13 @@ def tune(
         "-o",
         help="Output directory for results",
     ),
-    context: Optional[str] = typer.Option(
+    context: str | None = typer.Option(
         None,
         "--context",
         "-c",
         help="Context lengths to test (comma-separated, e.g., 2048,4096,8192)",
     ),
-    max_vram: Optional[float] = typer.Option(
+    max_vram: float | None = typer.Option(
         None,
         "--max-vram",
         help="Maximum VRAM in MB (soft limit)",
@@ -176,10 +172,10 @@ def tune(
 
     # Run tuning
     try:
-        from kvat.engines.transformers import TransformersAdapter
-        from kvat.core.search import TuningSearch
         from kvat.core.planner import PlanBuilder
         from kvat.core.report import ReportGenerator
+        from kvat.core.search import TuningSearch
+        from kvat.engines.transformers import TransformersAdapter
 
         adapter = TransformersAdapter()
 
@@ -253,7 +249,7 @@ def apply(
         "-p",
         help="Print code snippet to stdout",
     ),
-    output: Optional[str] = typer.Option(
+    output: str | None = typer.Option(
         None,
         "--out",
         "-o",
@@ -269,8 +265,7 @@ def apply(
 
         kvat apply plan.json --out config.py
     """
-    from kvat.core.planner import load_plan, PlanBuilder
-    from kvat.core.schema import TuneResult, WorkloadProfile, ProfileType
+    from kvat.core.planner import load_plan
 
     try:
         plan_data = load_plan(plan)
@@ -429,8 +424,8 @@ def list_profiles_cmd() -> None:
 @app.command()
 def info() -> None:
     """Show system information and capabilities."""
-    from kvat.probes.gpu import is_cuda_available, get_all_gpu_info
-    from kvat.probes.cpu import get_system_ram_info, get_cpu_count
+    from kvat.probes.cpu import get_cpu_count, get_system_ram_info
+    from kvat.probes.gpu import get_all_gpu_info, is_cuda_available
 
     console.print("[bold]System Information[/bold]\n")
 
@@ -477,7 +472,7 @@ def info() -> None:
 # Helper Functions
 # =============================================================================
 
-def _load_profile(profile_str: str, context_override: Optional[str]) -> WorkloadProfile:
+def _load_profile(profile_str: str, context_override: str | None) -> WorkloadProfile:
     """Load profile from name or path."""
     # Try built-in profile first
     profile = get_profile(profile_str)

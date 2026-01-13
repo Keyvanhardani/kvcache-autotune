@@ -10,32 +10,31 @@ Updated for latest Transformers API with cache_implementation parameter.
 from __future__ import annotations
 
 import gc
-import time
-from typing import Optional, Any, Iterator
 import logging
+import time
+from collections.abc import Iterator
+from typing import Any
 
-from kvat.engines.base import (
-    EngineAdapter,
-    GenerationOutput,
-    ResourceUsage,
-    ModelLoadError,
-    GenerationError,
-    CacheConfigError,
-)
 from kvat.core.schema import (
-    CandidateConfig,
-    CacheStrategy,
     AttentionBackend,
-    DType,
+    CacheStrategy,
+    CandidateConfig,
     DeviceType,
+    DType,
 )
-from kvat.probes.gpu import (
-    get_cuda_max_memory_mb,
-    reset_cuda_peak_memory,
-    empty_cuda_cache,
-    is_cuda_available,
+from kvat.engines.base import (
+    CacheConfigError,
+    EngineAdapter,
+    GenerationError,
+    GenerationOutput,
+    ModelLoadError,
+    ResourceUsage,
 )
 from kvat.probes.cpu import get_process_ram_mb
+from kvat.probes.gpu import (
+    get_cuda_max_memory_mb,
+    is_cuda_available,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -174,7 +173,6 @@ class TransformersAdapter(EngineAdapter):
         **kwargs: Any,
     ) -> None:
         """Load model with specified configuration."""
-        import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
         # Cleanup previous model
@@ -355,7 +353,6 @@ class TransformersAdapter(EngineAdapter):
         if not self.is_loaded:
             raise GenerationError("No model loaded")
 
-        import torch
 
         # Tokenize
         inputs = self._tokenizer(
@@ -420,9 +417,10 @@ class TransformersAdapter(EngineAdapter):
         max_new_tokens: int,
     ) -> Iterator[tuple[str, int]]:
         """Streaming generation with token-by-token output."""
+        from threading import Thread
+
         import torch
         from transformers import TextIteratorStreamer
-        from threading import Thread
 
         streamer = TextIteratorStreamer(
             self._tokenizer,
@@ -445,7 +443,6 @@ class TransformersAdapter(EngineAdapter):
             with torch.inference_mode():
                 self._model.generate(**generation_kwargs)
 
-        import torch
         thread = Thread(target=generate_thread)
         thread.start()
 
@@ -540,7 +537,7 @@ class TransformersAdapter(EngineAdapter):
     def _get_attention_implementation(
         self,
         backend: AttentionBackend,
-    ) -> Optional[str]:
+    ) -> str | None:
         """Get attention implementation string for model config."""
         impl_map = {
             AttentionBackend.EAGER: "eager",

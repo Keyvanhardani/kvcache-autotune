@@ -8,7 +8,6 @@ Supports:
 
 from __future__ import annotations
 
-from typing import Optional, Any
 from dataclasses import dataclass
 
 
@@ -20,7 +19,7 @@ class GPUInfo:
     name: str
     total_memory_mb: float
     compute_capability: tuple[int, int]
-    driver_version: Optional[str] = None
+    driver_version: str | None = None
 
 
 def is_cuda_available() -> bool:
@@ -123,7 +122,7 @@ def synchronize_cuda(device: int = 0) -> None:
     torch.cuda.synchronize(device)
 
 
-def get_gpu_info(device: int = 0) -> Optional[GPUInfo]:
+def get_gpu_info(device: int = 0) -> GPUInfo | None:
     """
     Get detailed GPU information.
 
@@ -206,7 +205,7 @@ def _init_nvml() -> bool:
         return False
 
 
-def get_nvml_memory_info(device: int = 0) -> Optional[dict[str, float]]:
+def get_nvml_memory_info(device: int = 0) -> dict[str, float] | None:
     """
     Get GPU memory info via NVML.
 
@@ -235,7 +234,7 @@ def get_nvml_memory_info(device: int = 0) -> Optional[dict[str, float]]:
         return None
 
 
-def get_nvml_utilization(device: int = 0) -> Optional[dict[str, int]]:
+def get_nvml_utilization(device: int = 0) -> dict[str, int] | None:
     """
     Get GPU utilization via NVML.
 

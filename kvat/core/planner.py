@@ -8,18 +8,18 @@ including fallback rules and code snippets.
 from __future__ import annotations
 
 import json
-from typing import Optional, Any
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 from kvat.core.schema import (
-    TuneResult,
-    CandidateConfig,
-    BenchmarkResult,
-    FallbackRule,
-    CacheStrategy,
     AttentionBackend,
+    BenchmarkResult,
+    CacheStrategy,
+    CandidateConfig,
     DType,
+    FallbackRule,
+    TuneResult,
 )
 
 
@@ -143,7 +143,7 @@ class PlanBuilder:
     def _find_memory_efficient_config(
         self,
         results: list[BenchmarkResult],
-    ) -> Optional[BenchmarkResult]:
+    ) -> BenchmarkResult | None:
         """Find the most memory-efficient configuration."""
         valid = [r for r in results if r.peak_vram_mb and r.success_rate > 0.5]
         if not valid:
@@ -153,7 +153,7 @@ class PlanBuilder:
     def _find_low_ttft_config(
         self,
         results: list[BenchmarkResult],
-    ) -> Optional[BenchmarkResult]:
+    ) -> BenchmarkResult | None:
         """Find configuration with lowest TTFT."""
         valid = [r for r in results if r.ttft_mean_ms > 0 and r.success_rate > 0.5]
         if not valid:
@@ -352,7 +352,7 @@ def load_plan(path: str | Path) -> dict[str, Any]:
         Plan dictionary
     """
     path = Path(path)
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 

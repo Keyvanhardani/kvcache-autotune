@@ -10,38 +10,37 @@ Implements:
 
 from __future__ import annotations
 
-import time
 import gc
 import logging
-from typing import Optional, Callable, Any
+import time
 from dataclasses import dataclass, field
 from itertools import product
+from typing import Any, Callable
 
-from kvat.core.schema import (
-    TuneConfig,
-    TuneResult,
-    CandidateConfig,
-    BenchmarkResult,
-    WorkloadProfile,
-    CacheStrategy,
-    AttentionBackend,
-    DType,
-    DeviceType,
-    Metrics,
-)
 from kvat.core.metrics import (
     MetricsCollector,
     calculate_score,
     is_dominated,
 )
-from kvat.engines.base import EngineAdapter, GenerationError
+from kvat.core.schema import (
+    AttentionBackend,
+    BenchmarkResult,
+    CacheStrategy,
+    CandidateConfig,
+    DeviceType,
+    DType,
+    Metrics,
+    TuneConfig,
+    TuneResult,
+)
+from kvat.engines.base import EngineAdapter
+from kvat.probes.cpu import create_ram_probe
 from kvat.probes.gpu import (
-    reset_cuda_peak_memory,
+    create_vram_probe,
     empty_cuda_cache,
     is_cuda_available,
-    create_vram_probe,
+    reset_cuda_peak_memory,
 )
-from kvat.probes.cpu import create_ram_probe
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +51,7 @@ class SearchProgress:
 
     total_candidates: int
     completed_candidates: int
-    current_candidate: Optional[CandidateConfig]
+    current_candidate: CandidateConfig | None
     current_context_length: int
     current_output_length: int
     best_score: float
@@ -76,7 +75,7 @@ class TuningSearch:
 
     config: TuneConfig
     adapter: EngineAdapter
-    progress_callback: Optional[ProgressCallback] = None
+    progress_callback: ProgressCallback | None = None
 
     # Internal state
     _candidates: list[CandidateConfig] = field(default_factory=list)
@@ -297,7 +296,7 @@ class TuningSearch:
         context_length: int,
         output_length: int,
         collector: MetricsCollector,
-    ) -> Optional[BenchmarkResult]:
+    ) -> BenchmarkResult | None:
         """
         Benchmark a single candidate configuration.
 

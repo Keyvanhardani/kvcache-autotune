@@ -9,9 +9,10 @@ Defines all data models used throughout the tuning process:
 
 from __future__ import annotations
 
-from enum import Enum
-from typing import Optional, Any
 from datetime import datetime
+from enum import Enum
+from typing import Any
+
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -111,8 +112,8 @@ class CandidateConfig(BaseModel):
     max_batch_size: int = 1
 
     # Cache-specific settings
-    cache_max_length: Optional[int] = None
-    sliding_window_size: Optional[int] = None
+    cache_max_length: int | None = None
+    sliding_window_size: int | None = None
     offload_to_cpu: bool = False
 
     # Additional settings
@@ -141,11 +142,11 @@ class Metrics(BaseModel):
     tokens_generated: int = Field(..., description="Number of tokens generated")
 
     # Memory metrics
-    peak_vram_mb: Optional[float] = Field(None, description="Peak VRAM usage in MB")
-    peak_ram_mb: Optional[float] = Field(None, description="Peak RAM usage in MB")
+    peak_vram_mb: float | None = Field(None, description="Peak VRAM usage in MB")
+    peak_ram_mb: float | None = Field(None, description="Peak RAM usage in MB")
 
     # Stability metrics
-    error: Optional[str] = Field(None, description="Error message if failed")
+    error: str | None = Field(None, description="Error message if failed")
     timeout: bool = Field(default=False, description="Whether run timed out")
 
 
@@ -164,8 +165,8 @@ class BenchmarkResult(BaseModel):
     ttft_std_ms: float = 0.0
     throughput_mean: float = 0.0
     throughput_std: float = 0.0
-    peak_vram_mb: Optional[float] = None
-    peak_ram_mb: Optional[float] = None
+    peak_vram_mb: float | None = None
+    peak_ram_mb: float | None = None
 
     # Scoring
     score: float = 0.0
@@ -261,11 +262,11 @@ class TuneConfig(BaseModel):
     profile: WorkloadProfile
 
     # Resource limits
-    max_vram_mb: Optional[float] = Field(
+    max_vram_mb: float | None = Field(
         None,
         description="Maximum VRAM to use (soft limit)"
     )
-    max_ram_mb: Optional[float] = Field(
+    max_ram_mb: float | None = Field(
         None,
         description="Maximum RAM to use (soft limit)"
     )
