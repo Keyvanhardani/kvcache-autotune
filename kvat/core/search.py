@@ -207,10 +207,16 @@ class TuningSearch:
 
         profile = self.config.profile
 
-        # Get model's max sequence length and filter context_lengths
-        max_seq_len = self.adapter.get_max_sequence_length()
+        # Get model's max sequence length from config (without loading full model)
+        model_config = {}
+        if hasattr(self.adapter, 'get_model_config'):
+            model_config = self.adapter.get_model_config(self.config.model_id)
+
+        max_seq_len = model_config.get("max_position_embeddings")
         context_lengths = profile.context_lengths
         output_lengths = profile.output_lengths
+
+        logger.info(f"Model max_position_embeddings: {max_seq_len}")
 
         if max_seq_len:
             # Filter context lengths to fit within model's max

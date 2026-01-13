@@ -491,6 +491,27 @@ class TransformersAdapter(EngineAdapter):
             torch.cuda.empty_cache()
             torch.cuda.reset_peak_memory_stats()
 
+    def get_model_config(self, model_id: str) -> dict[str, Any]:
+        """
+        Get model config info WITHOUT loading the full model.
+        Uses AutoConfig to fetch only the configuration.
+        """
+        from transformers import AutoConfig
+
+        try:
+            config = AutoConfig.from_pretrained(model_id, trust_remote_code=True)
+            return {
+                "max_position_embeddings": getattr(
+                    config, "max_position_embeddings", None
+                ),
+                "vocab_size": getattr(config, "vocab_size", None),
+                "hidden_size": getattr(config, "hidden_size", None),
+                "num_hidden_layers": getattr(config, "num_hidden_layers", None),
+            }
+        except Exception as e:
+            logger.warning(f"Could not fetch model config: {e}")
+            return {}
+
     def get_model_info(self) -> dict[str, Any]:
         """Get information about loaded model."""
         if not self.is_loaded:
