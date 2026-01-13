@@ -162,3 +162,10 @@ huggingface/
 # Logs
 *.log
 logs/
+
+# Private/Session files - DO NOT COMMIT
+CONTEXT.md
+.claude/
+*.claude
+benchmark_*/
+benchmark_test/
