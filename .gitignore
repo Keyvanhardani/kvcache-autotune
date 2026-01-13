@@ -153,6 +153,7 @@ kvat_results/
 results/
 *.json
 !examples/*.json
+!npm-package/package.json
 /profiles/
 
 # Model cache

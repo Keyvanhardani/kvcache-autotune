@@ -1,0 +1,47 @@
+{
+  "name": "kvat",
+  "version": "0.1.0",
+  "description": "Automatic KV-Cache Optimization for HuggingFace Transformers - Find the optimal cache strategy, attention backend, and configuration for your model and hardware.",
+  "main": "index.js",
+  "bin": {
+    "kvat": "./cli.js"
+  },
+  "scripts": {
+    "postinstall": "node postinstall.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "transformers",
+    "llm",
+    "kv-cache",
+    "optimization",
+    "inference",
+    "huggingface",
+    "deep-learning",
+    "machine-learning",
+    "pytorch",
+    "flash-attention",
+    "ai",
+    "ml"
+  ],
+  "author": "Keyvanhardani",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Keyvanhardani/kvcache-autotune.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Keyvanhardani/kvcache-autotune/issues"
+  },
+  "homepage": "https://github.com/Keyvanhardani/kvcache-autotune#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {},
+  "files": [
+    "index.js",
+    "cli.js",
+    "postinstall.js",
+    "README.md"
+  ]
+}

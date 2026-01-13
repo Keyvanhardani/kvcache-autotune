@@ -1,0 +1,13 @@
+# Test files
+test/
+*.test.js
+
+# Development files
+.eslintrc*
+.prettierrc*
+tsconfig.json
+
+# Other
+.git
+.gitignore
+node_modules/
