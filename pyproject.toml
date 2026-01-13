@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "kvcache-autotune"
+name = "kvat"
 version = "0.1.0"
 description = "Automatic KV-cache optimization for HuggingFace Transformers - Find the optimal cache strategy, attention backend, and configuration for your model and hardware."
 readme = "README.md"

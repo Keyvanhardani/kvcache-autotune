@@ -40,32 +40,97 @@ Modern LLM inference involves many configuration choices:
 
 The optimal combination depends on your specific model, hardware, and use case. **KVCache Auto-Tuner benchmarks these combinations systematically** and provides a production-ready configuration.
 
-## Benchmark Results
+## Performance Improvement
+
+**See the difference KVCache Auto-Tuner makes!** Our plugin optimizes your Transformers inference automatically.
 
 <p align="center">
-  <img src="assets/benchmark_overview.png" alt="Performance Overview" width="700">
+  <img src="assets/baseline_vs_optimized_hero.png" alt="Baseline vs Optimized Performance" width="800">
 </p>
+
+### Baseline vs Optimized
+
+| Model | Baseline | Optimized | Throughput | TTFT |
+|-------|----------|-----------|------------|------|
+| **GPT-2** | 118.1 tok/s | 120.2 tok/s | **+1.8%** | **+3.7%** |
+| **Qwen2.5-0.5B** | 28.7 tok/s | 29.5 tok/s | **+2.7%** | **+1.6%** |
+| **Phi-1.5** | 45.2 tok/s | 45.6 tok/s | **+0.9%** | **+5.1%** |
+
+<table>
+<tr>
+<td width="50%">
+<img src="assets/baseline_vs_optimized_throughput.png" alt="Throughput Improvement" width="100%">
+</td>
+<td width="50%">
+<img src="assets/baseline_vs_optimized_improvement.png" alt="Performance Gain" width="100%">
+</td>
+</tr>
+</table>
+
+> **Note**: Results vary by model and hardware. Larger improvements are typical for models that benefit from Flash Attention and dynamic caching.
+
+## Multi-Model Benchmark Results
+
+<p align="center">
+  <img src="assets/comparison_hero.png" alt="Multi-Model Performance Comparison" width="800">
+</p>
+
+### Model Comparison
+
+| Model | Family | Params | TTFT (ms) | Throughput | VRAM | Best Config |
+|-------|--------|--------|-----------|------------|------|-------------|
+| **GPT-2** | OpenAI | 124M | 9.1 | 124.6 tok/s | 283MB | dynamic/sdpa_flash |
+| **Phi-1.5** | Microsoft | 1.3B | 40.9 | 52.8 tok/s | 2.8GB | dynamic/sdpa_flash |
+| **Qwen2.5-0.5B** | Qwen | 0.5B | 33.9 | 33.6 tok/s | 975MB | dynamic/eager |
 
 ### Performance Comparison
 
 <table>
 <tr>
 <td width="50%">
-<img src="assets/benchmark_ttft.png" alt="TTFT Comparison" width="100%">
+<img src="assets/comparison_ttft.png" alt="TTFT Comparison" width="100%">
 </td>
 <td width="50%">
-<img src="assets/benchmark_throughput.png" alt="Throughput Comparison" width="100%">
+<img src="assets/comparison_throughput.png" alt="Throughput Comparison" width="100%">
 </td>
 </tr>
 </table>
 
-### Trade-off Analysis
+### VRAM Efficiency
+
+<table>
+<tr>
+<td width="50%">
+<img src="assets/comparison_vram.png" alt="VRAM Usage" width="100%">
+</td>
+<td width="50%">
+<img src="assets/comparison_scatter.png" alt="TTFT vs Throughput Trade-off" width="100%">
+</td>
+</tr>
+</table>
+
+> **Benchmark Setup**: NVIDIA RTX 4060 (8GB), Windows 11, Python 3.12, Transformers 4.52+
+
+### Single Model Analysis (GPT-2)
 
 <p align="center">
-  <img src="assets/benchmark_scatter.png" alt="TTFT vs Throughput Trade-off" width="600">
+  <img src="assets/benchmark_overview.png" alt="GPT-2 Configuration Analysis" width="700">
 </p>
 
-> **Benchmark Setup**: GPT-2 on NVIDIA RTX 4060 (8GB), Windows 11, Python 3.12, Transformers 4.52+
+<table>
+<tr>
+<td width="50%">
+<img src="assets/benchmark_ttft.png" alt="TTFT by Config" width="100%">
+</td>
+<td width="50%">
+<img src="assets/benchmark_throughput.png" alt="Throughput by Config" width="100%">
+</td>
+</tr>
+</table>
+
+<p align="center">
+  <img src="assets/benchmark_scatter.png" alt="Config Trade-off Analysis" width="600">
+</p>
 
 ## Features
 
@@ -81,10 +146,10 @@ The optimal combination depends on your specific model, hardware, and use case. 
 
 ```bash
 # Basic installation
-pip install kvcache-autotune
+pip install kvat
 
 # With all dependencies (recommended)
-pip install kvcache-autotune[full]
+pip install kvat[full]
 ```
 
 ### From Source
