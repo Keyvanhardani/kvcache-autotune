@@ -206,10 +206,36 @@ class TuningSearch:
             raise ValueError("No valid candidates to test")
 
         profile = self.config.profile
+
+        # Get model's max sequence length and filter context_lengths
+        max_seq_len = self.adapter.get_max_sequence_length()
+        context_lengths = profile.context_lengths
+        output_lengths = profile.output_lengths
+
+        if max_seq_len:
+            # Filter context lengths to fit within model's max
+            valid_ctx = [c for c in context_lengths if c <= max_seq_len]
+            if len(valid_ctx) < len(context_lengths):
+                filtered_out = [c for c in context_lengths if c > max_seq_len]
+                logger.warning(
+                    f"Model max_position_embeddings={max_seq_len}. "
+                    f"Filtering out context lengths: {filtered_out}"
+                )
+                context_lengths = valid_ctx if valid_ctx else [max_seq_len - 128]
+
+            # Also ensure context + output doesn't exceed max
+            valid_out = [o for o in output_lengths if min(context_lengths) + o <= max_seq_len]
+            if len(valid_out) < len(output_lengths):
+                filtered_out = [o for o in output_lengths if min(context_lengths) + o > max_seq_len]
+                logger.warning(
+                    f"Filtering out output lengths (would exceed max): {filtered_out}"
+                )
+                output_lengths = valid_out if valid_out else [32]
+
         total_tests = (
             len(self._candidates)
-            * len(profile.context_lengths)
-            * len(profile.output_lengths)
+            * len(context_lengths)
+            * len(output_lengths)
         )
 
         logger.info(f"Starting tuning search with {total_tests} total tests")
@@ -233,8 +259,8 @@ class TuningSearch:
                 continue
 
             # Test across context/output lengths
-            for ctx_len in profile.context_lengths:
-                for out_len in profile.output_lengths:
+            for ctx_len in context_lengths:
+                for out_len in output_lengths:
                     # Skip if pruned mid-flight
                     if candidate_id in self._pruned:
                         break

@@ -79,13 +79,22 @@ See how **kvat** improves your Transformers inference:
 
 ### Multi-Model Benchmarks
 
-Tested on NVIDIA RTX 4060 (8GB):
+**Desktop (RTX 4060 - 8GB VRAM):**
 
 | Model | TTFT | Throughput | VRAM | Best Config |
 |-------|------|------------|------|-------------|
 | GPT-2 | 9.1ms | 124.6 tok/s | 283MB | dynamic/sdpa_flash |
 | Phi-1.5 | 40.9ms | 52.8 tok/s | 2.8GB | dynamic/sdpa_flash |
 | Qwen2.5-0.5B | 33.9ms | 33.6 tok/s | 975MB | dynamic/eager |
+
+**Server (RTX 4000 Ada - 20GB VRAM):**
+
+| Model | TTFT | Throughput | VRAM | Best Config |
+|-------|------|------------|------|-------------|
+| GPT-2 | 4.2ms | **365.4 tok/s** | 264MB | dynamic/sdpa_flash |
+| Qwen2.5-7B | 284ms | 3.3 tok/s | 13.6GB | dynamic/sdpa_flash |
+
+> Server throughput is **3x faster** than desktop for the same model!
 
 <details>
 <summary><strong>View Multi-Model Charts</strong></summary>

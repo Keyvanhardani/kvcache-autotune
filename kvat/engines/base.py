@@ -180,6 +180,16 @@ class EngineAdapter(ABC):
         """
         pass
 
+    def get_max_sequence_length(self) -> int | None:
+        """
+        Get the maximum sequence length supported by the model.
+
+        Returns:
+            Max sequence length or None if unknown
+        """
+        info = self.get_model_info()
+        return info.get("max_position_embeddings")
+
     def validate_config(self, config: CandidateConfig) -> tuple[bool, str]:
         """
         Validate if a configuration is supported.
