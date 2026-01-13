@@ -69,14 +69,6 @@ kvat info
 | Qwen2.5-0.5B | 28.7 tok/s | 29.5 tok/s | **+2.7%** |
 | Phi-1.5 (1.3B) | 45.2 tok/s | 45.6 tok/s | **+0.9%** |
 
-### Server (RTX 4000 Ada - 20GB VRAM)
-
-| Model | TTFT | Throughput | VRAM |
-|-------|------|------------|------|
-| GPT-2 | 4.2ms | **365.4 tok/s** | 264MB |
-| Qwen2.5-7B | 284ms | 3.3 tok/s | 13.6GB |
-
-> Server is **3x faster** than desktop for the same model!
 
 <details open>
 <summary><strong>Desktop Benchmark Charts</strong></summary>
@@ -100,27 +92,7 @@ kvat info
 
 </details>
 
-<details open>
-<summary><strong>Server Benchmark Charts (RTX 4000 Ada)</strong></summary>
-
-<p align="center">
-  <img src="assets/server_baseline_vs_optimized_hero.png" alt="Server Performance" width="800">
-</p>
-
-<table>
-<tr>
-<td width="50%">
-<img src="assets/server_baseline_vs_optimized_throughput.png" alt="Server Throughput" width="100%">
-<p align="center"><em>Server Throughput (tok/s)</em></p>
-</td>
-<td width="50%">
-<img src="assets/server_baseline_vs_optimized_improvement.png" alt="Server Improvement" width="100%">
-<p align="center"><em>Server Performance Gain</em></p>
-</td>
-</tr>
-</table>
-
-</details>
+<!-- Server benchmarks coming soon with better hardware utilization -->
 
 ---
 
