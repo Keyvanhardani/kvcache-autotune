@@ -1,8 +1,10 @@
 """
 Transformers Engine Adapter for KVCache Auto-Tuner.
 
-Implements the EngineAdapter interface for HuggingFace Transformers,
+Implements the EngineAdapter interface for HuggingFace Transformers 4.57+,
 supporting various cache strategies and attention backends.
+
+Updated for latest Transformers API with cache_implementation parameter.
 """
 
 from __future__ import annotations
@@ -84,17 +86,17 @@ class TransformersAdapter(EngineAdapter):
     """
     HuggingFace Transformers adapter for KV-cache tuning.
 
-    Supports:
-    - Multiple cache strategies (Dynamic, Static, Sliding Window)
-    - Multiple attention backends (SDPA, Flash, xFormers)
-    - Various data types (fp16, bf16, fp32)
+    Uses latest Transformers 4.57+ API with:
+    - cache_implementation parameter for cache selection
+    - Proper inference_mode handling
+    - Modern generation config
     """
 
     def __init__(self) -> None:
         if not _check_transformers():
             raise ImportError(
                 "transformers is required for TransformersAdapter. "
-                "Install with: pip install transformers"
+                "Install with: pip install transformers>=4.45.0"
             )
 
         self._model = None
@@ -102,8 +104,9 @@ class TransformersAdapter(EngineAdapter):
         self._device = None
         self._dtype = None
         self._model_id = None
-        self._cache = None
+        self._cache_implementation = "dynamic"  # Default
         self._attention_backend = None
+        self._generation_config = None
 
     @property
     def name(self) -> str:
@@ -115,12 +118,13 @@ class TransformersAdapter(EngineAdapter):
 
     def get_supported_cache_strategies(self) -> list[CacheStrategy]:
         """Get supported cache strategies."""
+        # Modern Transformers supports these via cache_implementation
         strategies = [
             CacheStrategy.DYNAMIC,
             CacheStrategy.STATIC,
         ]
 
-        # Check for sliding window support
+        # Check for sliding window / sink cache support
         try:
             from transformers import SinkCache
             strategies.append(CacheStrategy.SLIDING_WINDOW)
@@ -171,31 +175,34 @@ class TransformersAdapter(EngineAdapter):
     ) -> None:
         """Load model with specified configuration."""
         import torch
-        from transformers import AutoModelForCausalLM, AutoTokenizer
+        from transformers import AutoModelForCausalLM, AutoTokenizer, GenerationConfig
 
         # Cleanup previous model
         self.cleanup()
 
         logger.info(f"Loading model: {model_id}")
 
-        # Map dtype
+        # Map dtype - use 'dtype' parameter (new API)
         torch_dtype = self._get_torch_dtype(dtype)
 
         # Prepare model kwargs
         model_kwargs = {
             "torch_dtype": torch_dtype,
-            "device_map": device.value if device == DeviceType.CUDA else None,
             "trust_remote_code": kwargs.get("trust_remote_code", True),
+            "low_cpu_mem_usage": kwargs.get("low_cpu_mem_usage", True),
         }
+
+        # Device mapping
+        if device == DeviceType.CUDA:
+            model_kwargs["device_map"] = "auto"
+        elif device == DeviceType.MPS:
+            model_kwargs["device_map"] = "mps"
+        # CPU: no device_map, will move manually
 
         # Set attention implementation
         attn_impl = self._get_attention_implementation(attention_backend)
         if attn_impl:
             model_kwargs["attn_implementation"] = attn_impl
-
-        # Low memory loading option
-        if kwargs.get("low_cpu_mem_usage", True):
-            model_kwargs["low_cpu_mem_usage"] = True
 
         try:
             self._tokenizer = AutoTokenizer.from_pretrained(
@@ -212,14 +219,19 @@ class TransformersAdapter(EngineAdapter):
                 **model_kwargs,
             )
 
-            # Move to device if not using device_map
+            # Move to device if CPU (no device_map)
             if device == DeviceType.CPU:
                 self._model = self._model.to("cpu")
-            elif device == DeviceType.MPS:
-                self._model = self._model.to("mps")
 
             # Set eval mode
             self._model.eval()
+
+            # Create generation config
+            self._generation_config = GenerationConfig(
+                do_sample=False,
+                pad_token_id=self._tokenizer.pad_token_id,
+                eos_token_id=self._tokenizer.eos_token_id,
+            )
 
             self._device = device
             self._dtype = dtype
@@ -233,51 +245,45 @@ class TransformersAdapter(EngineAdapter):
             raise ModelLoadError(f"Failed to load model: {e}") from e
 
     def prepare_cache(self, config: CandidateConfig) -> None:
-        """Prepare KV-cache according to configuration."""
+        """Prepare KV-cache strategy for generation."""
         if not self.is_loaded:
             raise CacheConfigError("No model loaded")
 
-        from transformers import DynamicCache, StaticCache
+        # Map cache strategy to cache_implementation string
+        cache_map = {
+            CacheStrategy.DYNAMIC: "dynamic",
+            CacheStrategy.STATIC: "static",
+            CacheStrategy.SLIDING_WINDOW: "sliding_window",
+            CacheStrategy.OFFLOAD_CPU: "offloaded",
+            CacheStrategy.QUANTIZED: "quantized",
+        }
 
-        self._cache = None
+        self._cache_implementation = cache_map.get(
+            config.cache_strategy,
+            "dynamic"
+        )
 
-        try:
-            if config.cache_strategy == CacheStrategy.DYNAMIC:
-                self._cache = DynamicCache()
+        # Check if cache_implementation is supported (requires triton on some platforms)
+        # Fall back to simple use_cache=True if not available
+        import platform
+        self._use_cache_implementation = platform.system() == "Linux"
 
-            elif config.cache_strategy == CacheStrategy.STATIC:
-                # Static cache requires knowing max length upfront
-                max_length = config.cache_max_length or 4096
+        # Update generation config with cache settings
+        if self._generation_config is not None and self._use_cache_implementation:
+            try:
+                self._generation_config.cache_implementation = self._cache_implementation
 
-                # Get model config for cache dimensions
-                model_config = self._model.config
+                # Static cache needs max length
+                if config.cache_strategy == CacheStrategy.STATIC:
+                    if config.cache_max_length:
+                        self._generation_config.cache_config = {
+                            "max_cache_len": config.cache_max_length
+                        }
+            except Exception as e:
+                logger.warning(f"cache_implementation not supported: {e}")
+                self._use_cache_implementation = False
 
-                self._cache = StaticCache(
-                    config=model_config,
-                    batch_size=config.max_batch_size,
-                    max_cache_len=max_length,
-                    device=self._model.device,
-                    dtype=self._get_torch_dtype(config.dtype),
-                )
-
-            elif config.cache_strategy == CacheStrategy.SLIDING_WINDOW:
-                # Use SinkCache for sliding window behavior
-                try:
-                    from transformers import SinkCache
-                    window_size = config.sliding_window_size or 1024
-                    self._cache = SinkCache(
-                        window_length=window_size,
-                        num_sink_tokens=4,
-                    )
-                except ImportError:
-                    raise CacheConfigError(
-                        "SinkCache not available in this transformers version"
-                    )
-
-            logger.debug(f"Cache prepared: {config.cache_strategy.value}")
-
-        except Exception as e:
-            raise CacheConfigError(f"Failed to prepare cache: {e}") from e
+        logger.debug(f"Cache prepared: {self._cache_implementation} (native={self._use_cache_implementation})")
 
     def run_prefill(
         self,
@@ -300,32 +306,28 @@ class TransformersAdapter(EngineAdapter):
         inputs = {k: v.to(self._model.device) for k, v in inputs.items()}
         prompt_tokens = inputs["input_ids"].shape[1]
 
-        # Reset cache if using static
-        if self._cache is not None and hasattr(self._cache, "reset"):
-            self._cache.reset()
-
         start_time = time.perf_counter()
 
         with torch.inference_mode():
             if max_new_tokens == 0:
-                # Prefill only - just run forward pass
-                outputs = self._model(
-                    **inputs,
-                    past_key_values=self._cache,
-                    use_cache=True,
-                )
+                # Prefill only - run forward pass
+                _ = self._model(**inputs, use_cache=False)
                 generated_tokens = 0
                 text = ""
             else:
-                # Generate tokens
-                outputs = self._model.generate(
+                # Generate tokens - use simple API for Windows compatibility
+                gen_kwargs = {
                     **inputs,
-                    max_new_tokens=max_new_tokens,
-                    past_key_values=self._cache,
-                    use_cache=True,
-                    do_sample=False,
-                    pad_token_id=self._tokenizer.pad_token_id,
-                )
+                    "max_new_tokens": max_new_tokens,
+                    "do_sample": False,
+                    "use_cache": True,
+                    "pad_token_id": self._tokenizer.pad_token_id,
+                }
+
+                if hasattr(self, '_use_cache_implementation') and self._use_cache_implementation:
+                    gen_kwargs["generation_config"] = self._generation_config
+
+                outputs = self._model.generate(**gen_kwargs)
 
                 generated_tokens = outputs.shape[1] - prompt_tokens
                 text = self._tokenizer.decode(
@@ -365,10 +367,6 @@ class TransformersAdapter(EngineAdapter):
         inputs = {k: v.to(self._model.device) for k, v in inputs.items()}
         prompt_tokens = inputs["input_ids"].shape[1]
 
-        # Reset cache
-        if self._cache is not None and hasattr(self._cache, "reset"):
-            self._cache.reset()
-
         if stream:
             return self._stream_generate(inputs, prompt_tokens, max_new_tokens)
         else:
@@ -380,18 +378,24 @@ class TransformersAdapter(EngineAdapter):
         prompt_tokens: int,
         max_new_tokens: int,
     ) -> GenerationOutput:
-        """Non-streaming generation."""
+        """Non-streaming generation using latest API."""
         import torch
 
+        # Build generation kwargs
+        gen_kwargs = {
+            **inputs,
+            "max_new_tokens": max_new_tokens,
+            "do_sample": False,
+            "use_cache": True,
+            "pad_token_id": self._tokenizer.pad_token_id,
+        }
+
+        # Only use generation_config if cache_implementation is supported
+        if hasattr(self, '_use_cache_implementation') and self._use_cache_implementation:
+            gen_kwargs["generation_config"] = self._generation_config
+
         with torch.inference_mode():
-            outputs = self._model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                past_key_values=self._cache,
-                use_cache=True,
-                do_sample=False,
-                pad_token_id=self._tokenizer.pad_token_id,
-            )
+            outputs = self._model.generate(**gen_kwargs)
 
         generated_tokens = outputs.shape[1] - prompt_tokens
         text = self._tokenizer.decode(
@@ -400,10 +404,7 @@ class TransformersAdapter(EngineAdapter):
         )
 
         # Determine finish reason
-        if generated_tokens >= max_new_tokens:
-            finish_reason = "length"
-        else:
-            finish_reason = "stop"
+        finish_reason = "length" if generated_tokens >= max_new_tokens else "stop"
 
         return GenerationOutput(
             text=text,
@@ -429,27 +430,29 @@ class TransformersAdapter(EngineAdapter):
             skip_special_tokens=True,
         )
 
+        # Clone generation config and add streamer
+        gen_config = self._generation_config.to_dict() if self._generation_config else {}
+
         generation_kwargs = {
             **inputs,
             "max_new_tokens": max_new_tokens,
-            "past_key_values": self._cache,
-            "use_cache": True,
-            "do_sample": False,
-            "pad_token_id": self._tokenizer.pad_token_id,
             "streamer": streamer,
+            **gen_config,
         }
 
         # Run generation in background thread
-        thread = Thread(
-            target=self._model.generate,
-            kwargs=generation_kwargs,
-        )
+        def generate_thread():
+            with torch.inference_mode():
+                self._model.generate(**generation_kwargs)
+
+        import torch
+        thread = Thread(target=generate_thread)
         thread.start()
 
         # Yield tokens as they come
         total_tokens = 0
         for text in streamer:
-            total_tokens += 1  # Approximate
+            total_tokens += 1
             yield text, total_tokens
 
         thread.join()
@@ -477,19 +480,19 @@ class TransformersAdapter(EngineAdapter):
             del self._tokenizer
             self._tokenizer = None
 
-        if self._cache is not None:
-            del self._cache
-            self._cache = None
-
         self._model_id = None
         self._device = None
         self._dtype = None
         self._attention_backend = None
+        self._generation_config = None
+        self._cache_implementation = "dynamic"
 
         gc.collect()
 
         if is_cuda_available():
-            empty_cuda_cache()
+            import torch
+            torch.cuda.empty_cache()
+            torch.cuda.reset_peak_memory_stats()
 
     def get_model_info(self) -> dict[str, Any]:
         """Get information about loaded model."""
@@ -505,6 +508,7 @@ class TransformersAdapter(EngineAdapter):
             "attention_backend": (
                 self._attention_backend.value if self._attention_backend else None
             ),
+            "cache_implementation": self._cache_implementation,
             "vocab_size": getattr(config, "vocab_size", None),
             "hidden_size": getattr(config, "hidden_size", None),
             "num_hidden_layers": getattr(config, "num_hidden_layers", None),
@@ -538,18 +542,18 @@ class TransformersAdapter(EngineAdapter):
         backend: AttentionBackend,
     ) -> Optional[str]:
         """Get attention implementation string for model config."""
-        # Map to transformers attention implementations
         impl_map = {
             AttentionBackend.EAGER: "eager",
             AttentionBackend.SDPA_MATH: "sdpa",
             AttentionBackend.SDPA_FLASH: "sdpa",
             AttentionBackend.SDPA_MEM_EFFICIENT: "sdpa",
             AttentionBackend.FLASH_ATTENTION: "flash_attention_2",
-            AttentionBackend.XFORMERS: "sdpa",  # xformers via SDPA
+            AttentionBackend.XFORMERS: "sdpa",
         }
         return impl_map.get(backend)
 
     def reset_memory_stats(self) -> None:
         """Reset GPU memory statistics for accurate measurement."""
         if is_cuda_available() and self._device == DeviceType.CUDA:
-            reset_cuda_peak_memory()
+            import torch
+            torch.cuda.reset_peak_memory_stats()

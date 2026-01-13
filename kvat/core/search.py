@@ -301,6 +301,8 @@ class TuningSearch:
         """
         Benchmark a single candidate configuration.
 
+        Uses separate prefill and decode measurements for accurate TTFT.
+
         Returns:
             BenchmarkResult or None if failed
         """
@@ -344,28 +346,42 @@ class TuningSearch:
                 # Reset for this run
                 if is_cuda_available():
                     reset_cuda_peak_memory()
-                collector.reset()
+                    self.adapter.reset_memory_stats()
 
                 try:
-                    collector.start()
+                    # Measure TTFT using prefill
+                    _, ttft_ms = self.adapter.run_prefill(prompt, max_new_tokens=1)
 
-                    # Run generation
+                    # Measure decode throughput with full generation
+                    start_time = time.perf_counter()
                     output = self.adapter.run_decode(
                         prompt,
                         max_new_tokens=output_length,
                         stream=False,
                     )
+                    total_time_ms = (time.perf_counter() - start_time) * 1000
 
-                    collector.set_tokens_generated(output.tokens_generated)
-                    collector.stop()
-
-                    # Collect metrics
-                    metrics = collector.get_metrics()
+                    # Calculate throughput (tokens/second)
+                    tokens_generated = output.tokens_generated
+                    if tokens_generated > 0 and total_time_ms > 0:
+                        # Decode throughput excludes first token time
+                        decode_time_ms = max(1.0, total_time_ms - ttft_ms)
+                        throughput = (tokens_generated / decode_time_ms) * 1000
+                    else:
+                        throughput = 0.0
 
                     # Get resource usage
                     resources = self.adapter.measure_resources()
-                    metrics.peak_vram_mb = resources.vram_mb
-                    metrics.peak_ram_mb = resources.ram_mb
+
+                    # Create metrics directly with measured values
+                    metrics = Metrics(
+                        ttft_ms=ttft_ms,
+                        decode_tokens_per_sec=throughput,
+                        total_time_ms=total_time_ms,
+                        tokens_generated=tokens_generated,
+                        peak_vram_mb=resources.vram_mb,
+                        peak_ram_mb=resources.ram_mb,
+                    )
 
                     result.runs.append(metrics)
 
