@@ -64,7 +64,8 @@ jobs:
 
       - name: Sync version from pyproject.toml
         run: |
-          VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml)
+          VERSION=$(sed -n 's/^version = "\([^"]*\)"/\1/p' pyproject.toml)
+          echo "Version: $VERSION"
           cd npm-package
           npm version $VERSION --no-git-tag-version --allow-same-version
 
@@ -92,9 +93,9 @@ jobs:
 
       - name: Sync version and set scope
         run: |
-          VERSION=$(grep -oP 'version = "\K[^"]+' pyproject.toml)
+          VERSION=$(sed -n 's/^version = "\([^"]*\)"/\1/p' pyproject.toml)
+          echo "Version: $VERSION"
           cd npm-package
-          # Update package name with scope for GitHub Packages
           npm pkg set name="@keyvanhardani/kvat"
           npm version $VERSION --no-git-tag-version --allow-same-version
 
