@@ -184,10 +184,12 @@ const result = await kvat.tune('gpt2', {
 
 ## Roadmap
 
-### v0.1.1 - Current
+### v0.1.3 - Current
 - [x] Auto context length limiting (fixes CUDA errors)
-- [x] PyPI + npm packages
+- [x] PyPI + npm + GitHub Packages
 - [x] Baseline vs Optimized benchmarking
+- [x] Multi-language READMEs (EN, DE, FR, ES, FA, AR)
+- [x] Improved report branding
 
 ### v0.2.0 - Next
 - [ ] Ollama adapter

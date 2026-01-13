@@ -1,6 +1,6 @@
 {
   "name": "kvat",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Automatic KV-Cache Optimization for HuggingFace Transformers - Find the optimal cache strategy, attention backend, and configuration for your model and hardware.",
   "main": "index.js",
   "bin": {
