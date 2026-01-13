@@ -96,7 +96,27 @@ kvat info
 
 </details>
 
-<!-- Server benchmarks coming soon with better hardware utilization -->
+### Server (RTX 4000 SFF Ada - 20GB VRAM)
+
+| Model | Throughput | TTFT | Best Config |
+|-------|------------|------|-------------|
+| GPT-2 (124M) | **407.1 tok/s** | 4.0ms | dynamic/sdpa_flash |
+| Qwen2.5-0.5B | **140.7 tok/s** | 10.9ms | dynamic/sdpa_flash |
+| TinyLlama-1.1B | **93.0 tok/s** | 30.6ms | static/eager |
+| Phi-1.5 (1.3B) | **78.8 tok/s** | 37.2ms | static/eager |
+
+<details>
+<summary><strong>Server Benchmark Charts</strong></summary>
+
+<p align="center">
+  <img src="assets/server_throughput.png" alt="Server Throughput" width="800">
+</p>
+
+<p align="center">
+  <img src="assets/server_dashboard.png" alt="Server Dashboard" width="800">
+</p>
+
+</details>
 
 ---
 
@@ -189,6 +209,8 @@ const result = await kvat.tune('gpt2', {
 - [x] PyPI + npm + GitHub Packages
 - [x] Baseline vs Optimized benchmarking
 - [x] Multi-language READMEs (EN, DE, FR, ES, FA, AR)
+- [x] Multi-language report generation (6 languages)
+- [x] Server benchmarks (RTX 4000 SFF Ada)
 - [x] Improved report branding
 
 ### v0.2.0 - Next
