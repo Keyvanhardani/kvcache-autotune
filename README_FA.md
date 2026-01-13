@@ -87,6 +87,27 @@ kvat info
 | Qwen2.5-0.5B | 28.7 tok/s | 29.5 tok/s | **+2.7%** |
 | Phi-1.5 (1.3B) | 45.2 tok/s | 45.6 tok/s | **+0.9%** |
 
+### سرور (RTX 4000 SFF Ada - 20GB VRAM)
+
+| مدل | توان عملیاتی | TTFT | بهترین پیکربندی |
+|-----|-------------|------|-----------------|
+| GPT-2 (124M) | **407.1 tok/s** | 4.0ms | dynamic/sdpa_flash |
+| Qwen2.5-0.5B | **140.7 tok/s** | 10.9ms | dynamic/sdpa_flash |
+| TinyLlama-1.1B | **93.0 tok/s** | 30.6ms | static/eager |
+| Phi-1.5 (1.3B) | **78.8 tok/s** | 37.2ms | static/eager |
+
+</div>
+
+<p align="center">
+  <img src="assets/server_throughput.png" alt="توان عملیاتی سرور" width="800">
+</p>
+
+<p align="center">
+  <img src="assets/server_dashboard.png" alt="داشبورد سرور" width="800">
+</p>
+
+<div dir="rtl">
+
 ---
 
 ## پروفایل‌ها

@@ -73,6 +73,23 @@ kvat info
 | Qwen2.5-0.5B | 28.7 tok/s | 29.5 tok/s | **+2.7%** |
 | Phi-1.5 (1.3B) | 45.2 tok/s | 45.6 tok/s | **+0.9%** |
 
+### Serveur (RTX 4000 SFF Ada - 20GB VRAM)
+
+| Modele | Debit | TTFT | Meilleure config |
+|--------|-------|------|------------------|
+| GPT-2 (124M) | **407.1 tok/s** | 4.0ms | dynamic/sdpa_flash |
+| Qwen2.5-0.5B | **140.7 tok/s** | 10.9ms | dynamic/sdpa_flash |
+| TinyLlama-1.1B | **93.0 tok/s** | 30.6ms | static/eager |
+| Phi-1.5 (1.3B) | **78.8 tok/s** | 37.2ms | static/eager |
+
+<p align="center">
+  <img src="assets/server_throughput.png" alt="Debit serveur" width="800">
+</p>
+
+<p align="center">
+  <img src="assets/server_dashboard.png" alt="Dashboard serveur" width="800">
+</p>
+
 ---
 
 ## Profils

@@ -63,7 +63,24 @@ kvat info
 
 ---
 
-## Real Benchmark Results
+## Benchmark Results
+
+<p align="center">
+  <img src="assets/server_throughput.png" alt="Server Throughput" width="800">
+</p>
+
+### Server (RTX 4000 SFF Ada - 20GB VRAM)
+
+| Model | Throughput | TTFT | Best Config |
+|-------|------------|------|-------------|
+| GPT-2 (124M) | **407.1 tok/s** | 4.0ms | dynamic/sdpa_flash |
+| Qwen2.5-0.5B | **140.7 tok/s** | 10.9ms | dynamic/sdpa_flash |
+| TinyLlama-1.1B | **93.0 tok/s** | 30.6ms | static/eager |
+| Phi-1.5 (1.3B) | **78.8 tok/s** | 37.2ms | static/eager |
+
+<p align="center">
+  <img src="assets/server_dashboard.png" alt="Server Dashboard" width="800">
+</p>
 
 ### Desktop (RTX 4060 - 8GB VRAM)
 
@@ -73,8 +90,7 @@ kvat info
 | Qwen2.5-0.5B | 28.7 tok/s | 29.5 tok/s | **+2.7%** |
 | Phi-1.5 (1.3B) | 45.2 tok/s | 45.6 tok/s | **+0.9%** |
 
-
-<details open>
+<details>
 <summary><strong>Desktop Benchmark Charts</strong></summary>
 
 <p align="center">
@@ -93,28 +109,6 @@ kvat info
 </td>
 </tr>
 </table>
-
-</details>
-
-### Server (RTX 4000 SFF Ada - 20GB VRAM)
-
-| Model | Throughput | TTFT | Best Config |
-|-------|------------|------|-------------|
-| GPT-2 (124M) | **407.1 tok/s** | 4.0ms | dynamic/sdpa_flash |
-| Qwen2.5-0.5B | **140.7 tok/s** | 10.9ms | dynamic/sdpa_flash |
-| TinyLlama-1.1B | **93.0 tok/s** | 30.6ms | static/eager |
-| Phi-1.5 (1.3B) | **78.8 tok/s** | 37.2ms | static/eager |
-
-<details>
-<summary><strong>Server Benchmark Charts</strong></summary>
-
-<p align="center">
-  <img src="assets/server_throughput.png" alt="Server Throughput" width="800">
-</p>
-
-<p align="center">
-  <img src="assets/server_dashboard.png" alt="Server Dashboard" width="800">
-</p>
 
 </details>
 
