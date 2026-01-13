@@ -239,6 +239,17 @@ pytest tests/ -v
 
 Apache 2.0
 
+## Citation
+
+```bibtex
+@software{kvat,
+  title = {KVCache Auto-Tuner: Automatic KV-Cache Optimization for Transformers},
+  author = {Keyvanhardani},
+  year = {2026},
+  url = {https://github.com/Keyvanhardani/kvcache-autotune}
+}
+```
+
 ---
 
 <p align="center">
